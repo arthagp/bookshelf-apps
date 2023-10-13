@@ -4,6 +4,47 @@
     box-sizing: border-box;
 }
 
+/* CSS untuk modal konfirmasi penghapusan */
+.modal {
+    display: none; /* Mengubah display menjadi none */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    /* display: flex; */
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+}
+
+.modal-content {
+    background-color: white;
+    border-radius: 5px;
+    padding: 16px;
+    text-align: center;
+}
+
+.modal-content button {
+    margin: 8px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.modal-content button#confirmDelete {
+    background-color: darkred;
+    color: white;
+}
+
+.modal-content button#cancelDelete {
+    background-color: lightgray;
+    color: black;
+}
+
+
 body, input, button {
     font-family: 'Open Sans', sans-serif;
 }

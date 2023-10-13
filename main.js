@@ -72,7 +72,6 @@ function findBookIndex(bookId) {
 function addReadComplete(id) {
     const bookTarget = findBook(id)
     if (bookTarget == null) return;
-    console.log(bookTarget, 'target')
     bookTarget.isComplete = true;
     // melakukan render ulang dan juga menjalankan saveBook agar data yang di localStorage juga terupdate
     document.dispatchEvent(new Event(RENDER_EVENT))
@@ -94,7 +93,6 @@ function undoReadComplete(id) {
 // handleDeleteBook
 function handleDeleteBook(bookId) {
     const bookTarget = findBookIndex(bookId)
-    // console.log(bookTarget, 'target')
     if (bookTarget == -1) return;
 
     books.splice(bookTarget, 1) // menghapus splice(index ke, jumlah yang di hapus)
@@ -129,24 +127,40 @@ function makeBook(bookObj) {
     // memberikan attribute id dengan value book-id <- ini berguna untuk mengetahui element tersebut jika di lakukan action nantinya
     article.setAttribute('id', `book-${id}`);
 
+    // Mendapatkan elemen modal dan tombol-tombol di dalam modal di luar event listener makeBook
+    const modal = document.getElementById('deleteModal');
+    const confirmButton = document.getElementById('confirmDelete');
+    const cancelButton = document.getElementById('cancelDelete');
+
+    // Dalam fungsi makeBook, saat tombol "Hapus buku" diklik
     deleteBook.addEventListener('click', () => {
-        handleDeleteBook(id)
-        console.log('terklik')
-    })
+        modal.style.display = 'flex';
+
+        // Tambahkan event listener untuk tombol "Ya" di modal
+        confirmButton.addEventListener('click', () => {
+            // Lakukan penghapusan buku di sini
+            handleDeleteBook(id);
+            // Tutup modal setelah penghapusan selesai
+            modal.style.display = 'none';
+        });
+
+        // Tambahkan event listener untuk tombol "Tidak" di modal
+        cancelButton.addEventListener('click', () => {
+            // Tutup modal tanpa melakukan penghapusan
+            modal.style.display = 'none';
+        });
+    });
+
 
     if (isComplete) {
         finishedReading.innerText = 'Belum selesai di Baca'
         finishedReading.addEventListener('click', () => {
             undoReadComplete(id)
-            console.log('ke klik')
         })
     } else {
         finishedReading.innerText = 'Selesai dibaca'
         finishedReading.addEventListener('click', () => {
-            // fungsi untuk mengembalikan belum selesai di baca
             addReadComplete(id)
-            console.log('selesai di baca')
-            console.log(addReadComplete(id)) // jika pertama kali memasukan itu ke console akan tetapi data kedua tidak ce
         })
     }
     return article
@@ -170,12 +184,7 @@ function addBook() {
     saveBook()
 }
 
-
-// searhing -> pertama kamu mendapatkan value dari inputkan, setelah itu kamu bisa menggunakan method filtering untuk memfilter array yang sesuai value saja
-// id = searchBook
-
-// console.log(formSearch, '<><><')
-
+//fungsi searchBook
 function searchBook(title) {
     title = title.toLowerCase(); // Mengonversi judul pencarian ke huruf kecil agar pencarian menjadi case-insensitive
     const searchResults = books.filter(book => book.title.toLowerCase().includes(title));
@@ -195,7 +204,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     formSearch.addEventListener('submit', function (event) {
         event.preventDefault();
-        const searchTerm = inputSearch.value.trim();
+        const searchTerm = inputSearch.value.trim(); // trim untuk menghilankgan spasi di awal dan akhir kata
         if (searchTerm !== '') {
             const results = searchBook(searchTerm);
             renderSearchResults(results);
@@ -205,10 +214,11 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    // fungsi untuk menampilkan sesuai judul yang di cari
     function renderSearchResults(results) {
         const uncompleteBookshelfList = document.getElementById('uncompleteBookshelfList');
         const completeBookshelfList = document.getElementById('completeBookshelfList');
-        
+
         uncompleteBookshelfList.innerHTML = '';
         completeBookshelfList.innerHTML = '';
 
@@ -229,7 +239,7 @@ document.addEventListener('DOMContentLoaded', function () {
         // Setel nilai input ke kosong
         inputBookTitle.value = '';
         inputBookAuthor.value = '';
-        inputBookyear.value = '';
+        inputBookYear.value = '';
         inputBookIsComplete.checked = false;
     })
 
@@ -237,6 +247,7 @@ document.addEventListener('DOMContentLoaded', function () {
         loadDataFromStorage();
     }
 })
+
 
 // menambahkan event listener render event
 document.addEventListener(RENDER_EVENT, () => {
