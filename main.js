@@ -1,13 +1,3 @@
-/*
-{
-  id: string | number,
-  title: string,
-  author: string,
-  timestamp: number,
-  isComplete: boolean,
-}
-*/
-// buat DomContentLoaded terlebih dahulu
 const books = []
 const RENDER_EVENT = 'render-book';
 const STORAGE_KEY = 'BOOKS_APP';
@@ -18,12 +8,12 @@ function generateId() {
     return +new Date()
 }
 
-function generateBookObject(id, title, author, timestamp, isComplete) {
+function generateBookObject(id, title, author, year, isComplete) {
     return {
         id,
         title,
         author,
-        timestamp,
+        year,
         isComplete,
     }
 }
@@ -58,16 +48,70 @@ function loadDataFromStorage() {
     document.dispatchEvent(new Event(RENDER_EVENT));
 }
 
+function findBook(bookId) {
+    for (const bookItem of books) {
+        // mengecek jika bookItem yang ada di dalam book sama dengan parameter bookId maka ...
+        if (bookItem.id === bookId) {
+            return bookItem
+        }
+    }
+    return null
+}
+
+function findBookIndex(bookId) {
+    for (const index in books) {
+        if (books[index].id == bookId) { // jika indeks book.id sama dengan param bookId akan return value index nya
+            return index
+        }
+    }
+    // jika tidak ada akan return -1 
+    return -1
+}
+
+//addReadComplete
+function addReadComplete(id) {
+    const bookTarget = findBook(id)
+    if (bookTarget == null) return;
+    console.log(bookTarget, 'target')
+    bookTarget.isComplete = true;
+    // melakukan render ulang dan juga menjalankan saveBook agar data yang di localStorage juga terupdate
+    document.dispatchEvent(new Event(RENDER_EVENT))
+    saveBook()
+}
+
+// undoReadComplete
+function undoReadComplete(id) {
+    // rubah status isComplete menjadi false agar masuk lagi ke dalam belum selesai di baca
+    const bookTarget = findBook(id)
+    if (bookTarget == null) return;
+
+    bookTarget.isComplete = false
+    // melakukan render ulang dan juga menjalankan saveBook agar data yang di localStorage juga terupdate
+    document.dispatchEvent(new Event(RENDER_EVENT))
+    saveBook()
+}
+
+// handleDeleteBook
+function handleDeleteBook(bookId){
+    const bookTarget = findBookIndex(bookId)
+    // console.log(bookTarget, 'target')
+    if(bookTarget == -1) return;
+
+    books.splice(bookTarget, 1) // menghapus splice(index ke, jumlah yang di hapus)
+    document.dispatchEvent(new Event(RENDER_EVENT))
+    saveBook()
+}
+
 // membuat element untuk menampung book
 function makeBook(bookObj) {
-    const { id, title, author, timestamp, isComplete } = bookObj
+    const { id, title, author, year, isComplete } = bookObj
 
     const textTitle = document.createElement('h3')
     textTitle.innerText = title
     const textAuthor = document.createElement('p')
     textAuthor.innerText = author
-    const textTimestamp = document.createElement('p')
-    textTimestamp.innerText = timestamp
+    const textYear = document.createElement('p')
+    textYear.innerText = year
 
     const statsAction = document.createElement('div')
     statsAction.classList.add('action')
@@ -81,38 +125,45 @@ function makeBook(bookObj) {
 
     const article = document.createElement('article')
     article.classList.add('book_item');
-    article.append(textTitle, textAuthor, textTimestamp, statsAction)
+    article.append(textTitle, textAuthor, textYear, statsAction)
     // memberikan attribute id dengan value book-id <- ini berguna untuk mengetahui element tersebut jika di lakukan action nantinya
     article.setAttribute('id', `book-${id}`);
 
     deleteBook.addEventListener('click', () => {
         handleDeleteBook(id)
+        console.log('terklik')
     })
 
     if (isComplete) {
         finishedReading.innerText = 'Belum selesai di Baca'
         finishedReading.addEventListener('click', () => {
             undoReadComplete(id)
+            console.log('ke klik')
         })
     } else {
         finishedReading.innerText = 'Selesai dibaca'
         finishedReading.addEventListener('click', () => {
             // fungsi untuk mengembalikan belum selesai di baca
             addReadComplete(id)
+            console.log('selesai di baca')
+            console.log(addReadComplete(id)) // jika pertama kali memasukan itu ke console akan tetapi data kedua tidak ce
         })
     }
     return article
 }
 
+
+
 function addBook() {
     const inputBookTitle = document.getElementById('inputBookTitle').value
     const inputBookAuthor = document.getElementById('inputBookAuthor').value
-    const inputBookTimestamp = document.getElementById('inputBookYear').value
+    const inputBookYear = document.getElementById('inputBookYear').value
     const inputBookIsComplete = document.getElementById('inputBookIsComplete').checked
+    const parsingYear = parseInt(inputBookYear)
 
     const generateID = generateId()
     // memasukan value ke dalam function generateBookObject
-    const bookObject = generateBookObject(generateID, inputBookTitle, inputBookAuthor, inputBookTimestamp, inputBookIsComplete)
+    const bookObject = generateBookObject(generateID, inputBookTitle, inputBookAuthor, parsingYear, inputBookIsComplete)
     books.push(bookObject)
 
     // memanggil custom event untuk di render ulang
@@ -121,12 +172,20 @@ function addBook() {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
+    const inputBookTitle = document.getElementById('inputBookTitle')
+    const inputBookAuthor = document.getElementById('inputBookAuthor')
+    const inputBookyear = document.getElementById('inputBookYear')
+    const inputBookIsComplete = document.getElementById('inputBookIsComplete')
     // buat handler submit
     const submitForm = document.getElementById('inputBook')
     submitForm.addEventListener('submit', function (event) {
         event.preventDefault()
         addBook()
-        // console.log(books)
+         // Setel nilai input ke kosong
+         inputBookTitle.value = '';
+         inputBookAuthor.value = '';
+         inputBookyear.value = '';
+         inputBookIsComplete.checked = false;
     })
 
     if (isStorageExist()) {
