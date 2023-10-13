@@ -92,10 +92,10 @@ function undoReadComplete(id) {
 }
 
 // handleDeleteBook
-function handleDeleteBook(bookId){
+function handleDeleteBook(bookId) {
     const bookTarget = findBookIndex(bookId)
     // console.log(bookTarget, 'target')
-    if(bookTarget == -1) return;
+    if (bookTarget == -1) return;
 
     books.splice(bookTarget, 1) // menghapus splice(index ke, jumlah yang di hapus)
     document.dispatchEvent(new Event(RENDER_EVENT))
@@ -153,7 +153,6 @@ function makeBook(bookObj) {
 }
 
 
-
 function addBook() {
     const inputBookTitle = document.getElementById('inputBookTitle').value
     const inputBookAuthor = document.getElementById('inputBookAuthor').value
@@ -171,21 +170,67 @@ function addBook() {
     saveBook()
 }
 
+
+// searhing -> pertama kamu mendapatkan value dari inputkan, setelah itu kamu bisa menggunakan method filtering untuk memfilter array yang sesuai value saja
+// id = searchBook
+
+// console.log(formSearch, '<><><')
+
+function searchBook(title) {
+    title = title.toLowerCase(); // Mengonversi judul pencarian ke huruf kecil agar pencarian menjadi case-insensitive
+    const searchResults = books.filter(book => book.title.toLowerCase().includes(title));
+
+    return searchResults;
+}
+
+
 document.addEventListener('DOMContentLoaded', function () {
-    const inputBookTitle = document.getElementById('inputBookTitle')
-    const inputBookAuthor = document.getElementById('inputBookAuthor')
-    const inputBookyear = document.getElementById('inputBookYear')
-    const inputBookIsComplete = document.getElementById('inputBookIsComplete')
+    const inputBookTitle = document.getElementById('inputBookTitle');
+    const inputBookAuthor = document.getElementById('inputBookAuthor');
+    const inputBookYear = document.getElementById('inputBookYear');
+    const inputBookIsComplete = document.getElementById('inputBookIsComplete');
+
+    const formSearch = document.getElementById('searchBook');
+    const inputSearch = document.getElementById('searchBookTitle');
+
+    formSearch.addEventListener('submit', function (event) {
+        event.preventDefault();
+        const searchTerm = inputSearch.value.trim();
+        if (searchTerm !== '') {
+            const results = searchBook(searchTerm);
+            renderSearchResults(results);
+        } else {
+            // Jika input pencarian kosong, render data buku tidak selesai dan selesai seperti biasa.
+            document.dispatchEvent(new Event(RENDER_EVENT));
+        }
+    });
+
+    function renderSearchResults(results) {
+        const uncompleteBookshelfList = document.getElementById('uncompleteBookshelfList');
+        const completeBookshelfList = document.getElementById('completeBookshelfList');
+        
+        uncompleteBookshelfList.innerHTML = '';
+        completeBookshelfList.innerHTML = '';
+
+        results.forEach(result => {
+            const resultElement = makeBook(result);
+            if (result.isComplete) {
+                completeBookshelfList.appendChild(resultElement);
+            } else {
+                uncompleteBookshelfList.appendChild(resultElement);
+            }
+        });
+    }
     // buat handler submit
     const submitForm = document.getElementById('inputBook')
     submitForm.addEventListener('submit', function (event) {
         event.preventDefault()
         addBook()
-         // Setel nilai input ke kosong
-         inputBookTitle.value = '';
-         inputBookAuthor.value = '';
-         inputBookyear.value = '';
-         inputBookIsComplete.checked = false;
+        // Setel nilai input ke kosong
+        inputBookTitle.value = '';
+        inputBookAuthor.value = '';
+        inputBookyear.value = '';
+        inputBookIsComplete.checked = false;
     })
 
     if (isStorageExist()) {
