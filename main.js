@@ -136,21 +136,14 @@ function makeBook(bookObj) {
     deleteBook.addEventListener('click', () => {
         modal.style.display = 'flex';
 
-        // Tambahkan event listener untuk tombol "Ya" di modal
         confirmButton.addEventListener('click', () => {
-            // Lakukan penghapusan buku di sini
             handleDeleteBook(id);
-            // Tutup modal setelah penghapusan selesai
             modal.style.display = 'none';
         });
-
-        // Tambahkan event listener untuk tombol "Tidak" di modal
         cancelButton.addEventListener('click', () => {
-            // Tutup modal tanpa melakukan penghapusan
             modal.style.display = 'none';
         });
     });
-
 
     if (isComplete) {
         finishedReading.innerText = 'Belum selesai di Baca'
